@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cihuy Full HP</title>
+    <title>Cihuy Anti Potong</title>
     <style>
+        * { box-sizing: border-box; }
         body {
             margin: 0;
             background: #000;
@@ -21,41 +22,24 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
         }
-
         #intro-message {
             position: relative;
             z-index: 10;
             text-align: center;
-            padding: 40px 20px; 
+            padding: 40px 20px;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             border: 4px solid white;
-            border-radius: 25px;
+            border-radius: 20px;
             cursor: pointer;
             color: white;
-            /* Memastikan box tidak melebihi lebar layar HP */
-            width: 85%; 
-            max-width: 500px;
-            box-sizing: border-box; /* Penting agar padding tidak menambah lebar */
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+            width: 85%;
+            max-width: 400px;
         }
-
-        h1 { 
-            /* Font size otomatis mengecil jika layar sempit */
-            font-size: clamp(1.5rem, 7vw, 3rem); 
-            margin: 0; 
-            word-wrap: break-word;
-        }
-
-        p { 
-            font-size: clamp(0.9rem, 4vw, 1.5rem);
-            margin-top: 15px;
-            color: #ffeb3b;
-        }
+        h1 { font-size: 1.8rem; margin: 0; line-height: 1.2; }
+        p { font-size: 1rem; margin-top: 15px; color: #ffeb3b; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
 </head>
@@ -100,7 +84,6 @@
             this.alpha = 1;
             this.friction = 0.95;
             this.gravity = 0.1;
-
             if (targetX !== null) {
                 this.targetX = targetX;
                 this.targetY = targetY;
@@ -114,7 +97,6 @@
                 this.hasTarget = false;
             }
         }
-
         draw() {
             ctx.fillStyle = this.color;
             ctx.globalAlpha = this.alpha;
@@ -122,12 +104,11 @@
             ctx.arc(this.x, this.y, 1.2, 0, Math.PI * 2);
             ctx.fill();
         }
-
         update() {
             if (this.hasTarget) {
                 this.x += (this.targetX - this.x) * this.ease;
                 this.y += (this.targetY - this.y) * this.ease;
-                this.alpha -= 0.005; 
+                this.alpha -= 0.005;
             } else {
                 this.vx *= this.friction;
                 this.vy *= this.friction;
@@ -142,34 +123,29 @@
     function getPoints(text) {
         const tempCanvas = document.createElement('canvas');
         const tempCtx = tempCanvas.getContext('2d');
-        
-        // Gunakan ukuran yang pas dengan layar
         tempCanvas.width = canvas.width;
         tempCanvas.height = canvas.height;
-        
-        // Logika agar teks kembang api selalu muat di lebar layar HP
+
+        // --- FIX LOGIKA FONT AGAR TIDAK KEPOTONG ---
         let fontSize;
         if (text.length > 5) {
-            fontSize = canvas.width * 0.12; // Teks panjang (Happy New Year)
+            // Untuk "HAPPY NEW YEAR 2026"
+            // Kita hitung lebar maksimal adalah 90% dari lebar layar
+            fontSize = (canvas.width * 0.9) / (text.length * 0.6); 
+            if (fontSize > 60) fontSize = 60; // Batasi maksimal di HP agar tetap proporsional
         } else {
-            fontSize = canvas.width * 0.35; // Angka countdown
+            // Untuk angka 3, 2, 1
+            fontSize = canvas.width * 0.4;
+            if (fontSize > 300) fontSize = 300;
         }
-
-        // Batasi agar tidak terlalu besar di Tablet/PC
-        const maxFS = text.length > 5 ? 100 : 300;
-        if (fontSize > maxFS) fontSize = maxFS;
 
         tempCtx.font = `bold ${fontSize}px Arial`;
         tempCtx.textAlign = 'center';
         tempCtx.textBaseline = 'middle';
-        
-        // Gambar teks di tengah
         tempCtx.fillText(text, tempCanvas.width / 2, tempCanvas.height / 2);
 
         const imgData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height).data;
         const points = [];
-        
-        // Jarak antar titik (gap) lebih renggang di HP agar performa lancar
         const gap = window.innerWidth < 600 ? 5 : 4;
 
         for (let y = 0; y < tempCanvas.height; y += gap) {
@@ -183,18 +159,17 @@
     }
 
     function createFirework(text = null) {
-        if (text) particles = []; 
+        if (text) particles = [];
         if (soundEnabled) fireworkSound.play();
         const color = `hsl(${Math.random() * 360}, 100%, 70%)`;
-        
         if (text) {
             const points = getPoints(text);
             points.forEach(p => {
                 particles.push(new Particle(canvas.width / 2, canvas.height, color, p.x, p.y));
             });
         } else {
-            const x = Math.random() * canvas.width;
-            const y = Math.random() * (canvas.height * 0.6);
+            const x = Math.random() * (canvas.width * 0.8) + (canvas.width * 0.1);
+            const y = Math.random() * (canvas.height * 0.5);
             for (let i = 0; i < 40; i++) {
                 particles.push(new Particle(x, y, color));
             }
@@ -205,22 +180,20 @@
         if (stepIndex < countdownSteps.length) {
             createFirework(countdownSteps[stepIndex]);
             stepIndex++;
-            setTimeout(startSequence, 2200); 
+            setTimeout(startSequence, 2500); 
         } else {
-            autoMode = true; 
+            autoMode = true;
         }
     }
 
     function animate() {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
         for (let i = particles.length - 1; i >= 0; i--) {
             particles[i].update();
             particles[i].draw();
             if (particles[i].alpha <= 0) particles.splice(i, 1);
         }
-
         if (autoMode && Math.random() < 0.05) {
             createFirework();
         }
@@ -234,7 +207,6 @@
             startSequence();
         }
     });
-
     animate();
 </script>
 
