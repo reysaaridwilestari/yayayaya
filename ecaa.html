@@ -3,49 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Happy New Year 2026</title>
+    <title>Cihuy Full HP</title>
     <style>
         body {
             margin: 0;
             background: #000;
             overflow: hidden;
-            /* Menggunakan dvh agar tidak terpotong address bar di HP */
-            height: 100dvh; 
-            width: 100vw;
             display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 100vh;
             font-family: 'Arial Black', sans-serif;
             touch-action: none;
-            position: fixed; /* Mencegah scrolling */
         }
         canvas {
             display: block;
             position: absolute;
             top: 0;
             left: 0;
+            width: 100%;
+            height: 100%;
         }
+
         #intro-message {
             position: relative;
             z-index: 10;
             text-align: center;
-            padding: 30px;
+            padding: 40px 20px; 
             background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 3px solid white;
-            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 4px solid white;
+            border-radius: 25px;
             cursor: pointer;
             color: white;
-            width: 80%;
-            max-width: 400px;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-            transition: transform 0.2s;
+            /* Memastikan box tidak melebihi lebar layar HP */
+            width: 85%; 
+            max-width: 500px;
+            box-sizing: border-box; /* Penting agar padding tidak menambah lebar */
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
         }
-        #intro-message:active {
-            transform: scale(0.95);
+
+        h1 { 
+            /* Font size otomatis mengecil jika layar sempit */
+            font-size: clamp(1.5rem, 7vw, 3rem); 
+            margin: 0; 
+            word-wrap: break-word;
         }
-        h1 { font-size: 1.8rem; margin: 0; }
-        p { font-size: 1.2rem; margin-top: 10px; color: #ffeb3b; }
+
+        p { 
+            font-size: clamp(0.9rem, 4vw, 1.5rem);
+            margin-top: 15px;
+            color: #ffeb3b;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
 </head>
@@ -54,13 +64,13 @@
 <canvas id="fireworks"></canvas>
 
 <div id="intro-message">
-    <h1>CIIIIHHHHUUUUUYYYYY</h1>
-    <p>KLIKKKKK BROOOOOOO</p>
+    <h1>CIIIIHHHHUUUUYYYYY</h1>
+    <p>KLIKKKKK BROOOOO</p>
 </div>
 
 <script>
     const canvas = document.getElementById('fireworks');
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
     const introMessage = document.getElementById('intro-message');
 
     let soundEnabled = false;
@@ -74,12 +84,11 @@
         canvas.height = window.innerHeight;
     }
     window.addEventListener('resize', resize);
-    window.addEventListener('orientationchange', () => setTimeout(resize, 200));
     resize();
 
     const fireworkSound = new Howl({
         src: ['https://assets.mixkit.co/sfx/preview/mixkit-firework-explosion-1707.mp3'],
-        volume: 0.6,
+        volume: 0.5,
         html5: true
     });
 
@@ -90,7 +99,7 @@
             this.color = color;
             this.alpha = 1;
             this.friction = 0.95;
-            this.gravity = 0.12;
+            this.gravity = 0.1;
 
             if (targetX !== null) {
                 this.targetX = targetX;
@@ -99,7 +108,7 @@
                 this.ease = 0.08;
             } else {
                 const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 8 + 2;
+                const speed = Math.random() * 6 + 2;
                 this.vx = Math.cos(angle) * speed;
                 this.vy = Math.sin(angle) * speed;
                 this.hasTarget = false;
@@ -133,22 +142,35 @@
     function getPoints(text) {
         const tempCanvas = document.createElement('canvas');
         const tempCtx = tempCanvas.getContext('2d');
+        
+        // Gunakan ukuran yang pas dengan layar
         tempCanvas.width = canvas.width;
         tempCanvas.height = canvas.height;
         
-        // Responsif font size: teks panjang akan lebih kecil agar tidak terpotong
-        let fontSize = text.length > 5 ? canvas.width * 0.1 : canvas.width * 0.5;
-        const maxFontSize = text.length > 5 ? 80 : 300;
-        if (fontSize > maxFontSize) fontSize = maxFontSize;
+        // Logika agar teks kembang api selalu muat di lebar layar HP
+        let fontSize;
+        if (text.length > 5) {
+            fontSize = canvas.width * 0.12; // Teks panjang (Happy New Year)
+        } else {
+            fontSize = canvas.width * 0.35; // Angka countdown
+        }
+
+        // Batasi agar tidak terlalu besar di Tablet/PC
+        const maxFS = text.length > 5 ? 100 : 300;
+        if (fontSize > maxFS) fontSize = maxFS;
 
         tempCtx.font = `bold ${fontSize}px Arial`;
         tempCtx.textAlign = 'center';
         tempCtx.textBaseline = 'middle';
+        
+        // Gambar teks di tengah
         tempCtx.fillText(text, tempCanvas.width / 2, tempCanvas.height / 2);
 
         const imgData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height).data;
         const points = [];
-        const gap = canvas.width < 600 ? 6 : 4; // Lebih renggang di HP agar ringan
+        
+        // Jarak antar titik (gap) lebih renggang di HP agar performa lancar
+        const gap = window.innerWidth < 600 ? 5 : 4;
 
         for (let y = 0; y < tempCanvas.height; y += gap) {
             for (let x = 0; x < tempCanvas.width; x += gap) {
@@ -163,7 +185,7 @@
     function createFirework(text = null) {
         if (text) particles = []; 
         if (soundEnabled) fireworkSound.play();
-        const color = `hsl(${Math.random() * 360}, 100%, 75%)`;
+        const color = `hsl(${Math.random() * 360}, 100%, 70%)`;
         
         if (text) {
             const points = getPoints(text);
@@ -183,7 +205,7 @@
         if (stepIndex < countdownSteps.length) {
             createFirework(countdownSteps[stepIndex]);
             stepIndex++;
-            setTimeout(startSequence, 2500); 
+            setTimeout(startSequence, 2200); 
         } else {
             autoMode = true; 
         }
