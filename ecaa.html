@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cihuy Anti Potong</title>
+    <title>HP VER</title>
     <style>
         * { box-sizing: border-box; }
         body {
@@ -23,6 +23,26 @@
             top: 0;
             left: 0;
         }
+
+        /* PESAN INSTRUKSI LANDSCAPE */
+        #orientation-warning {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            color: #ffeb3b;
+            z-index: 9999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        @media screen and (orientation: portrait) {
+            #orientation-warning { display: flex; }
+        }
+
         #intro-message {
             position: relative;
             z-index: 10;
@@ -36,20 +56,45 @@
             cursor: pointer;
             color: white;
             width: 85%;
-            max-width: 400px;
+            max-width: 450px;
         }
-        h1 { font-size: 1.8rem; margin: 0; line-height: 1.2; }
-        p { font-size: 1rem; margin-top: 15px; color: #ffeb3b; }
+
+        h1 { font-size: 1.8rem; margin: 0; line-height: 1.2; color: #00f2ff; }
+        .btn-start {
+            margin-top: 20px;
+            background: #fff;
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            display: inline-block;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .phone-icon { font-size: 50px; margin-bottom: 10px; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
 </head>
 <body>
 
+<div id="orientation-warning">
+    <div class="phone-icon">🔄</div>
+    <h2>MIRINGKAN HP KAMU!</h2>
+    <p>Mohon putar ke posisi <b>Landscape</b> (Mendatar) untuk tampilan kembang api terbaik.</p>
+</div>
+
 <canvas id="fireworks"></canvas>
 
 <div id="intro-message">
     <h1>CIIIIHHHHUUUUYYYYY</h1>
-    <p>KLIKKKKK BROOOOO</p>
+    <p style="color: #ffeb3b; margin: 15px 0;">WAJIB LANDSCAPE</p>
+    <div class="btn-start">KLIK BROOO🚀</div>
 </div>
 
 <script>
@@ -126,16 +171,15 @@
         tempCanvas.width = canvas.width;
         tempCanvas.height = canvas.height;
 
-        // --- FIX LOGIKA FONT AGAR TIDAK KEPOTONG ---
+        // Logika Ukuran Font yang lebih aman untuk Landscape
         let fontSize;
         if (text.length > 5) {
-            // Untuk "HAPPY NEW YEAR 2026"
-            // Kita hitung lebar maksimal adalah 90% dari lebar layar
-            fontSize = (canvas.width * 0.9) / (text.length * 0.6); 
-            if (fontSize > 60) fontSize = 60; // Batasi maksimal di HP agar tetap proporsional
+            // Untuk teks panjang, gunakan lebar layar sebagai patokan
+            fontSize = canvas.width / (text.length * 0.6);
+            if (fontSize > 80) fontSize = 80; 
         } else {
-            // Untuk angka 3, 2, 1
-            fontSize = canvas.width * 0.4;
+            // Untuk angka countdown
+            fontSize = canvas.height * 0.5;
             if (fontSize > 300) fontSize = 300;
         }
 
@@ -146,7 +190,7 @@
 
         const imgData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height).data;
         const points = [];
-        const gap = window.innerWidth < 600 ? 5 : 4;
+        const gap = 4;
 
         for (let y = 0; y < tempCanvas.height; y += gap) {
             for (let x = 0; x < tempCanvas.width; x += gap) {
@@ -162,6 +206,7 @@
         if (text) particles = [];
         if (soundEnabled) fireworkSound.play();
         const color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+        
         if (text) {
             const points = getPoints(text);
             points.forEach(p => {
@@ -170,7 +215,7 @@
         } else {
             const x = Math.random() * (canvas.width * 0.8) + (canvas.width * 0.1);
             const y = Math.random() * (canvas.height * 0.5);
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 50; i++) {
                 particles.push(new Particle(x, y, color));
             }
         }
@@ -201,12 +246,20 @@
     }
 
     introMessage.addEventListener('click', () => {
+        // Cek jika sedang Portrait, beri peringatan keras
+        if (window.innerHeight > window.innerWidth) {
+            alert("Putar HP kamu ke posisi Mendatar (Landscape) dulu ya!");
+            return;
+        }
+
         if (!soundEnabled) {
             soundEnabled = true;
             introMessage.style.display = 'none';
+            if (navigator.vibrate) navigator.vibrate(100);
             startSequence();
         }
     });
+
     animate();
 </script>
 
