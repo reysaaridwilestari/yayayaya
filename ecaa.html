@@ -24,12 +24,11 @@
             left: 0;
         }
 
-        /* PESAN INSTRUKSI LANDSCAPE */
         #orientation-warning {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
             color: #ffeb3b;
             z-index: 9999;
             flex-direction: column;
@@ -59,12 +58,12 @@
             max-width: 450px;
         }
 
-        h1 { font-size: 1.8rem; margin: 0; line-height: 1.2; color: #00f2ff; }
+        h1 { font-size: 1.8rem; margin: 0; color: #00f2ff; }
         .btn-start {
             margin-top: 20px;
             background: #fff;
             color: #000;
-            padding: 10px 20px;
+            padding: 15px 30px;
             border-radius: 50px;
             font-size: 1.2rem;
             display: inline-block;
@@ -76,25 +75,23 @@
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
         }
-
-        .phone-icon { font-size: 50px; margin-bottom: 10px; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
 </head>
 <body>
 
 <div id="orientation-warning">
-    <div class="phone-icon">🔄</div>
+    <div style="font-size: 50px;">🔄</div>
     <h2>MIRINGIN HPNYA!!!</h2>
-    <p>JADIIN <b>LANDSCAPE </b>BURUANN IHHH</p>
+    <p>JADIIN <b>LANDSCAPE</b> BURUANNN</p>
 </div>
 
 <canvas id="fireworks"></canvas>
 
 <div id="intro-message">
     <h1>ASSALAMUALAIKUM</h1>
-    <p style="color: #ffeb3b; margin: 15px 0; font-size: 18px;">👽 CIIIIIHHHHUUUUUYYYYY 👽</p>
-    <div class="btn-start">KLIK INII BROOO 🥺🥺</div>
+    <p style="color: #ffeb3b; margin: 15px 0; font-size: 16px;">👽 CIIIIIHHHHHUUUUUYYYYY👽</p>
+    <div class="btn-start">KLIKK INIII 🥺🥺</div>
 </div>
 
 <script>
@@ -116,9 +113,8 @@
     resize();
 
     const fireworkSound = new Howl({
-        src: ['https://assets.mixkit.co/sfx/preview/mixkit-firework-explosion-1707.mp3'],
-        volume: 0.5,
-        html5: true
+        src: ["sound.mp3"],
+        volume: 0.8
     });
 
     class Particle {
@@ -128,7 +124,7 @@
             this.color = color;
             this.alpha = 1;
             this.friction = 0.95;
-            this.gravity = 0.1;
+            this.gravity = 0.12;
             if (targetX !== null) {
                 this.targetX = targetX;
                 this.targetY = targetY;
@@ -136,7 +132,7 @@
                 this.ease = 0.08;
             } else {
                 const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 6 + 2;
+                const speed = Math.random() * 7 + 2;
                 this.vx = Math.cos(angle) * speed;
                 this.vy = Math.sin(angle) * speed;
                 this.hasTarget = false;
@@ -146,14 +142,14 @@
             ctx.fillStyle = this.color;
             ctx.globalAlpha = this.alpha;
             ctx.beginPath();
-            ctx.arc(this.x, this.y, 1.2, 0, Math.PI * 2);
+            ctx.arc(this.x, this.y, 1.8, 0, Math.PI * 2);
             ctx.fill();
         }
         update() {
             if (this.hasTarget) {
                 this.x += (this.targetX - this.x) * this.ease;
                 this.y += (this.targetY - this.y) * this.ease;
-                this.alpha -= 0.005;
+                this.alpha -= 0.008;
             } else {
                 this.vx *= this.friction;
                 this.vy *= this.friction;
@@ -171,17 +167,8 @@
         tempCanvas.width = canvas.width;
         tempCanvas.height = canvas.height;
 
-        // Logika Ukuran Font yang lebih aman untuk Landscape
-        let fontSize;
-        if (text.length > 5) {
-            // Untuk teks panjang, gunakan lebar layar sebagai patokan
-            fontSize = canvas.width / (text.length * 0.6);
-            if (fontSize > 80) fontSize = 80; 
-        } else {
-            // Untuk angka countdown
-            fontSize = canvas.height * 0.5;
-            if (fontSize > 300) fontSize = 300;
-        }
+        let fontSize = text.length > 5 ? canvas.width / (text.length * 0.7) : canvas.height * 0.5;
+        if (fontSize > 300) fontSize = 300;
 
         tempCtx.font = `bold ${fontSize}px Arial`;
         tempCtx.textAlign = 'center';
@@ -191,7 +178,6 @@
         const imgData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height).data;
         const points = [];
         const gap = 4;
-
         for (let y = 0; y < tempCanvas.height; y += gap) {
             for (let x = 0; x < tempCanvas.width; x += gap) {
                 if (imgData[((y * tempCanvas.width + x) * 4) + 3] > 128) {
@@ -202,9 +188,9 @@
         return points;
     }
 
-    function createFirework(text = null) {
+    // FUNGSI INI HANYA UNTUK VISUAL (TIDAK ADA SOUND)
+    function createVisualOnly(text = null) {
         if (text) particles = [];
-        if (soundEnabled) fireworkSound.play();
         const color = `hsl(${Math.random() * 360}, 100%, 70%)`;
         
         if (text) {
@@ -213,7 +199,7 @@
                 particles.push(new Particle(canvas.width / 2, canvas.height, color, p.x, p.y));
             });
         } else {
-            const x = Math.random() * (canvas.width * 0.8) + (canvas.width * 0.1);
+            const x = Math.random() * canvas.width;
             const y = Math.random() * (canvas.height * 0.5);
             for (let i = 0; i < 50; i++) {
                 particles.push(new Particle(x, y, color));
@@ -222,11 +208,19 @@
     }
 
     function startSequence() {
+        if (stepIndex === 0) {
+            fireworkSound.play();
+        }
+
         if (stepIndex < countdownSteps.length) {
-            createFirework(countdownSteps[stepIndex]);
+            
+            createVisualOnly(countdownSteps[stepIndex]);
             stepIndex++;
-            setTimeout(startSequence, 2500); 
+
+            // Waktu jeda disesuaikan 1.2 detik agar sinkron
+            setTimeout(startSequence, 1200); 
         } else {
+            // Selesai, masuk mode sunyi
             autoMode = true;
         }
     }
@@ -240,28 +234,21 @@
             if (particles[i].alpha <= 0) particles.splice(i, 1);
         }
         if (autoMode && Math.random() < 0.05) {
-            createFirework();
+            createVisualOnly(); // Memanggil visual saja, tanpa sound.play()
         }
         requestAnimationFrame(animate);
     }
 
     introMessage.addEventListener('click', () => {
-        // Cek jika sedang Portrait, beri peringatan keras
-        if (window.innerHeight > window.innerWidth) {
-            alert("Putar HP kamu ke posisi Mendatar (Landscape) dulu ya!");
-            return;
-        }
-
+        if (window.innerHeight > window.innerWidth) return alert("MIRINGIN DULU HP NYA!");
         if (!soundEnabled) {
             soundEnabled = true;
             introMessage.style.display = 'none';
-            if (navigator.vibrate) navigator.vibrate(100);
             startSequence();
         }
     });
 
     animate();
 </script>
-
 </body>
 </html>
