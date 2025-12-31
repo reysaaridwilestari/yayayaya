@@ -90,8 +90,8 @@
 
 <div id="intro-message">
     <h1>ASSALAMUALAIKUM</h1>
-    <p style="color: #ffeb3b; margin: 15px 0; font-size: 16px;">👽 CIIIIIHHHHHUUUUUYYYYY👽</p>
-    <div class="btn-start">KLIKK INIII 🥺</div>
+    <p style="color: #ffeb3b; margin: 15px 0; font-size: 16px;">👽 CIIIIIHHHHHUUUUUYYYYY 👽</p>
+    <div class="btn-start">KLIKK INIII 🥺🥺</div>
 </div>
 
 <script>
@@ -112,9 +112,12 @@
     window.addEventListener('resize', resize);
     resize();
 
+    // Inisialisasi Suara - html5: false agar loading instan di RAM
     const fireworkSound = new Howl({
-        src: ["sound.mp3"],
-        volume: 0.8
+        src: ["https://files.catbox.moe/d52dm2.mp3"],
+        html5: false,
+        preload: true,
+        volume: 1.0,
     });
 
     class Particle {
@@ -188,7 +191,6 @@
         return points;
     }
 
-    // FUNGSI INI HANYA UNTUK VISUAL (TIDAK ADA SOUND)
     function createVisualOnly(text = null) {
         if (text) particles = [];
         const color = `hsl(${Math.random() * 360}, 100%, 70%)`;
@@ -208,25 +210,24 @@
     }
 
     function startSequence() {
+        // Jika MP3 berisi 3-2-1, cukup play sekali di awal
         if (stepIndex === 0) {
             fireworkSound.play();
         }
-
-        if (stepIndex < countdownSteps.length) {
             
+        if (stepIndex < countdownSteps.length) {
             createVisualOnly(countdownSteps[stepIndex]);
             stepIndex++;
 
-            // Waktu jeda disesuaikan 1.2 detik agar sinkron
+            // SINKRONISASI: Samakan angka 1200 dengan tempo suara Anda
             setTimeout(startSequence, 1200); 
         } else {
-            // Selesai, masuk mode sunyi
             autoMode = true;
         }
     }
 
     function animate() {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         for (let i = particles.length - 1; i >= 0; i--) {
             particles[i].update();
@@ -234,16 +235,24 @@
             if (particles[i].alpha <= 0) particles.splice(i, 1);
         }
         if (autoMode && Math.random() < 0.05) {
-            createVisualOnly(); // Memanggil visual saja, tanpa sound.play()
+            createVisualOnly();
         }
         requestAnimationFrame(animate);
     }
 
+    // Hanya satu Event Listener yang benar tanpa typo
     introMessage.addEventListener('click', () => {
         if (window.innerHeight > window.innerWidth) return alert("MIRINGIN DULU HP NYA!");
+        
+        // Resume context audio untuk browser mobile
+        if (Howler.ctx && Howler.ctx.state === 'suspended') {
+            Howler.ctx.resume();
+        }
+
         if (!soundEnabled) {
             soundEnabled = true;
             introMessage.style.display = 'none';
+            stepIndex = 0; 
             startSequence();
         }
     });
